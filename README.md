@@ -1,40 +1,39 @@
 # C-Pascal-Compiler
-Ce dépôt contient le code source d'un compilateur simple de pascal en C. Le compilateur est capable de générer du code intermédiaire (p-code) à partir d'un programme pascal. Le p-code est ensuite exécuté par une machine virtuelle.
+This repository contains the source code for a simple Pascal to C compiler. The compiler can generate intermediate code (p-code) from a Pascal program. The p-code is then executed by an interpreter.
 
-## Fonctionnalités
+## Features
 
-* Analyse lexicale
-* Analyse syntaxique
-* Analyse sémantique
-* Génération de P-code
-* Interprétation du P-code
+* **Lexical analysis**: Converts the input source code into a sequence of tokens.
+* **Syntax analysis**: Checks the tokens against the grammar rules to form a parse tree.
+* **Semantic analysis**: Ensures the parse tree adheres to the language's semantic rules, like type checking.
+* **P-code generation**: Translates the validated source code into intermediate code (p-code).
+* **P-code interpretation**: Executes the p-code.
 
-## Structure du projet
+## Project Structure
 
-* `compilateur.c`: contient le code source du compilateur (analyseur lexical, syntaxique, sémantique, et generateur du p-code).
-* `tokens.h`: Définition des tokens du langage
-* `errors.h`: Définition des erreurs du langage
-* `run.c`: Code pour exécuter le compilateur
+* `compiler.c`: Contains the source code of the compiler (lexical analyzer, syntax analyzer, semantic analyzer, and p-code generator).
+* `tokens.h`: Definition of language tokens
+* `errors.h`: Definition of language errors
+* `run.c`: Code to execute the compiler
 
-## Exemple d'exécution
+## Example Execution
 
-1. Ecriture d'un programme pascal dans le dossier `\tests` (par exemple `code1.p`).
-2. Compilation du compilateur avec la commande `gcc run.c -o run`.
-3. Exécution du compilateur avec la commande `run code1.p`.
+1. Write a Pascal program in the `\tests` folder (e.g., `code1.p`).
+2. Compile the compiler with the command `gcc run.c -o run`.
+3. Run the compiler with the command `run code1.p`.
 
-
-## Définitions des symboles non-terminaux
+## Definitions of Non-terminal Symbols
 - `PROGRAM` ::= program ID ; BLOCK .
 - `BLOCK` ::= CONSTS VARS INSTS
 - `CONSTS` ::= const ID = NUM ; { ID = NUM ; } | ε (epsilon)
 - `VARS` ::= var ID { , ID } ; | ε
 - `INSTS` ::= begin INST { ; INST } end
-- `INST` ::= INSTS | AFFEC | SI | TANTQUE | ECRIRE | LIRE | ε
-- `AFFEC` ::= ID := EXPR
-- `SI` ::= if COND then INST
-- `TANTQUE` ::= while COND do INST
-- `ECRIRE` ::= write ( EXPR { , EXPR } )
-- `LIRE` ::= read ( ID { , ID } )
+- `INST` ::= INSTS | ASSIGN | IF | WHILE | WRITE | READ | ε
+- `ASSIGN` ::= ID := EXPR
+- `IF` ::= if COND then INST
+- `WHILE` ::= while COND do INST
+- `WRITE` ::= write ( EXPR { , EXPR } )
+- `READ` ::= read ( ID { , ID } )
 - `COND` ::= EXPR RELOP EXPR
 - `RELOP` ::= = | <> | < | > | <= | >=
 - `EXPR` ::= TERM { ADDOP TERM }
@@ -42,54 +41,58 @@ Ce dépôt contient le code source d'un compilateur simple de pascal en C. Le co
 - `TERM` ::= FACT { MULOP FACT }
 - `MULOP` ::= * | /
 - `FACT` ::= ID | NUM | ( EXPR )
-- `ID` ::= lettre { lettre | chiffre }
-- `NUM` ::= chiffre { chiffre }
-- `Chiffre` ::= 0 |..| 9
-- `Lettre` ::= a | b |..| z | A |..| Z
+- `ID` ::= letter { letter | digit }
+- `NUM` ::= digit { digit }
+- `digit` ::= 0 |..| 9
+- `letter` ::= a | b |..| z | A |..| Z
 
-Les symboles non-terminaux sont en majuscules et représentent des concepts syntaxiques, tandis que les terminaux sont en minuscules et représentent des éléments de base tels que des mots-clés, des opérateurs, des identifiants et des nombres. Le symbole ε (epsilon) représente une production vide.
+Non-terminal symbols are in uppercase and represent syntactic constructs, while terminal symbols are in lowercase and represent basic elements such as keywords, operators, identifiers, and numbers. The symbol ε (epsilon) represents an empty production.
 
-## **Règles sémantiques**
+## **Semantic Rules**
 
-- **Règle 1**: Toutes les déclarations dans `CONSTS` et `VARS`
-- **Règle 2**: PAS DE DOUBLE DÉCLARATIONS
-- **Règle 3**: Après `BEGIN`, tous les symboles doivent être déjà déclarés
-- **Règle 4**: Une constante ne peut changer de valeur dans le programme
-- **Règle 5**: L'ID du programme ne peut être utilisé dans le programme
+- **Rule 1**: All declarations in `CONSTS` and `VARS` must be unique.
+- **Rule 2**: NO DUPLICATE DECLARATIONS
+- **Rule 3**: After `BEGIN`, all symbols must be already declared
+- **Rule 4**: A constant cannot change value in the program
+- **Rule 5**: The program ID cannot be used within the program
 
-## Jeu d'instructions
+## Instruction Set
 
-### Instructions arithmétiques
+### Arithmetic Instructions
 
-- `ADD` : Additionne le sous-sommet de la pile avec le sommet, et laisse le résultat au sommet de la pile.
-- `SUB` : Soustrait le sommet de la pile du sous-sommet de la pile, et laisse le résultat au sommet de la pile.
-- `MUL` : Multiplie le sous-sommet de la pile par le sommet, et laisse le résultat au sommet de la pile.
-- `DIV` : Divise le sous-sommet de la pile par le sommet, et laisse le résultat au sommet de la pile.
+- `ADD`: Adds the second-to-top value on the stack to the top value, and leaves the result on the top of the stack.
+- `SUB`: Subtracts the top value of the stack from the second-to-top value, and leaves the result on the top of the stack.
+- `MUL`: Multiplies the second-to-top value on the stack by the top value, and leaves the result on the top of the stack.
+- `DIV`: Divides the second-to-top value on the stack by the top value, and leaves the result on the top of the stack.
 
-### Instructions de comparaison
+### Comparison Instructions
 
-- `EQL` : Laisse 1 au sommet de la pile si le sous-sommet de la pile est égal au sommet, sinon laisse 0.
-- `NEQ` : Laisse 1 au sommet de la pile si le sous-sommet de la pile n'est pas égal au sommet, sinon laisse 0.
-- `GTR` : Laisse 1 au sommet de la pile si le sous-sommet de la pile est plus grand que le sommet, sinon laisse 0.
-- `LSS` : Laisse 1 au sommet de la pile si le sous-sommet de la pile est plus petit que le sommet, sinon laisse 0.
-- `GEQ` : Laisse 1 au sommet de la pile si le sous-sommet de la pile est supérieur ou égal au sommet, sinon laisse 0.
-- `LEQ` : Laisse 1 au sommet de la pile si le sous-sommet de la pile est inférieur ou égal au sommet, sinon laisse 0.
+- `EQL`: Leaves 1 on the top of the stack if the second-to-top value is equal to the top value, otherwise leaves 0.
+- `NEQ`: Leaves 1 on the top of the stack if the second-to-top value is not equal to the top value, otherwise leaves 0.
+- `GTR`: Leaves 1 on the top of the stack if the second-to-top value is greater than the top value, otherwise leaves 0.
+- `LSS`: Leaves 1 on the top of the stack if the second-to-top value is less than the top value, otherwise leaves 0.
+- `GEQ`: Leaves 1 on the top of the stack if the second-to-top value is greater than or equal to the top value, otherwise leaves 0.
+- `LEQ`: Leaves 1 on the top of the stack if the second-to-top value is less than or equal to the top value, otherwise leaves 0.
 
-### Instructions de manipulation de la pile
+### Stack Manipulation Instructions
 
-- `PRN` : Imprime la valeur au sommet de la pile et la dépile.
-- `INN` : Lit un entier et le stocke à l'adresse trouvée au sommet de la pile, puis dépile.
-- `INT c` : Incrémente de la constante `c` le pointeur de pile (la constante `c` peut être négative).
-- `LDI v` : Empile la valeur `v`.
-- `LDA a` : Empile l'adresse `a`.
-- `LDV` : Remplace le sommet de la pile par la valeur trouvée à l'adresse indiquée par le sommet (déréférence).
-- `STO` : Stocke la valeur au sommet de la pile à l'adresse indiquée par le sous-sommet de la pile, puis dépile deux fois.
+- `PRN`: Prints the top value of the stack and pops it.
+- `INN`: Reads an integer and stores it at the address found on the top of the stack, then pops the stack.
+- `INT c`: Increments the stack pointer by the constant `c` (the constant `c` can be negative).
+- `LDI v`: Pushes the value `v` onto the stack.
+- `LDA a`: Pushes the address `a` onto the stack.
+- `LDV`: Replaces the top of the stack with the value found at the address indicated by the top of the stack (dereference).
+- `STO`: Stores the top value of the stack at the address indicated by the second-to-top value, then pops the stack twice.
 
-### Instructions de branchement
+### Branching Instructions
 
-- `BRN i` : Effectue un branchement inconditionnel à l'instruction `i`.
-- `BZE i` : Effectue un branchement à l'instruction `i` si le sommet de la pile est égal à 0, puis dépile.
+- `BRN i`: Performs an unconditional branch to instruction `i`.
+- `BZE i`: Branches to instruction `i` if the top of the stack is equal to 0, then pops the stack.
 
-### Autre instruction
+### Other Instructions
 
-- `HLT` : Arrête l'exécution du programme.
+- `HLT`: Stops the execution of the program.
+
+## Contributing
+
+If you find this project helpful, please give it a star ⭐. Contributions are welcome; fork the repo and submit a pull request. Thank you!
